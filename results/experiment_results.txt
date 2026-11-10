@@ -1,0 +1,89 @@
+EXPERIMENT 4: CACHE COHERENCE AND NUMA PERFORMANCE
+
+1. CACHE COHERENCE SIMULATION
+
+Iterations: 1000
+
+Layout    Protocol  Bus Transactions  Invalidations  Writebacks  C2C
+Adjacent  MSI       4000              1999            1999        0
+Adjacent  MESI      3999              1999            1999        0
+Adjacent  MOESI     3999              1999            0           1999
+Padded    MSI       4                 0               0           0
+Padded    MESI      2                 0               0           0
+Padded    MOESI     2                 0               0           0
+
+2. FALSE SHARING MEASUREMENTS
+Standalone 2-thread benchmark, median of 3 runs:
+
+Adjacent:
+0.033223, 0.037851, 0.032851 seconds
+Median: 0.033223 seconds
+
+Padded:
+0.032240, 0.025999, 0.026023 seconds
+Median: 0.026023 seconds
+
+Adjacent/Padded ratio: 1.277
+
+3. NUMA MEMORY SWEEP
+Buffer: 512 MB
+Passes: 4
+Stride: 64 bytes
+Checksum: 33554432
+
+Local memory:
+1 thread: 0.091933 seconds
+2 threads: 0.062793 seconds
+
+Remote memory:
+1 thread: 0.145796 seconds
+2 threads: 0.071854 seconds
+
+4. COMBINED NUMA COMPARISON
+Memory sweep, median of 3 runs:
+
+Local, 1 thread: 0.0978 seconds
+Local, 2 threads: 0.0733 seconds
+Remote, 1 thread: 0.0988 seconds
+Remote, 2 threads: 0.0771 seconds
+
+Remote/Local ratio:
+1 thread: 1.010
+2 threads: 1.052
+
+
+5. COMBINED PROGRAM - FALSE SHARING TABLE
+
+Total increments: 100,000,000
+
+Layout     Threads   Final Count   Correctness   Time (s)
+Adjacent       1     100000000    Correct       0.0241
+Padded         1     100000000    Correct       0.0226
+Adjacent       2     100000000    Correct       0.0154
+Padded         2     100000000    Correct       0.0137
+Adjacent       4     100000000    Correct       0.0301
+Padded         4     100000000    Correct       0.0174
+
+6. COMBINED PROGRAM - DEFAULT MEMORY SWEEP
+
+Buffer: 512 MB
+Passes: 4
+
+Threads   Time (s)
+1         0.0991
+2         0.0727
+
+7. OBSERVATIONS
+
+- All cache coherence simulator configurations completed.
+- Padding reduced simulated bus transactions significantly.
+- MOESI avoided forced writebacks by using cache-to-cache transfers.
+- All counter configurations in the combined program produced correct final counts.
+- Padded counters performed better than adjacent counters in the 2-thread and 4-thread combined tests.
+- Two threads improved memory sweep execution time compared with one thread.
+- Remote memory was slightly slower in the combined NUMA measurements.
+- The VM uses virtual NUMA nodes, so these measurements should not be treated as physical multi-socket hardware results.
+
+8. CONCLUSION
+
+The experiment demonstrated the differences between MSI, MESI and MOESI cache coherence protocols, the effect of false sharing, and the influence of NUMA memory placement on execution time. Padding reduced cache-line sharing, while MOESI reduced memory writebacks through cache-to-cache transfers. Local memory placement showed a small performance advantage in the combined NUMA tests.
